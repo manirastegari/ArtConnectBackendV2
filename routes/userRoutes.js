@@ -1,0 +1,145 @@
+const express = require('express');
+const multer = require('multer');
+const sharp = require('sharp');
+const router = express.Router();
+const User = require('../models/User');
+const Art = require('../models/Art');
+const Event = require('../models/Event');
+
+// Set up multer for file uploads
+const upload = multer({
+  limits: {
+    fileSize: 150 * 1024 * 1024, // 150MB
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error('Please upload an image'));
+    }
+    cb(undefined, true);
+  },
+});
+
+// Update user image
+router.post('/update-image/:id', upload.single('image'), async (req, res) => {
+  try {
+    const buffer = await sharp(req.file.buffer)
+      .resize(250, 250) // Smaller size for profile pictures
+      .toFormat('webp')
+      .toBuffer();
+
+    // Reduce quality until the image is under 50 KB
+    let quality = 90;
+    while (buffer.length > 50 * 1024 && quality > 10) {
+      buffer = await sharp(req.file.buffer)
+        .resize(250, 250)
+        .toFormat('webp', { quality })
+        .toBuffer();
+      quality -= 10;
+    }
+
+    // Convert buffer to base64
+    const base64Image = buffer.toString('base64');
+    const user = await User.findByIdAndUpdate(req.params.id, { image: base64Image }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'Image updated successfully', image: base64Image });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Login user
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Implement token generation or session management here
+    res.status(200).json({ message: 'Login successful', userId: user._id });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Register a new user
+router.post('/register', async (req, res) => {
+  try {
+    const { fullname, email, password, type } = req.body;
+    const newUser = new User({ fullname, email, password, type });
+    await newUser.save();
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Logout user
+router.post('/logout', (req, res) => {
+  // Implement token/session invalidation logic here
+  console.log('User logged out successfully');
+  res.status(200).json({ message: 'Logout successful' });
+});
+
+// Get user details
+router.get('/details/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('fullname email type image favorites'); // Include favorites
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Toggle favorite art
+router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
+  try {
+    const { userId, artId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isFavorite = user.favorites.includes(artId);
+    if (isFavorite) {
+      user.favorites.pull(artId);
+    } else {
+      user.favorites.push(artId);
+    }
+
+    await user.save();
+    res.status(200).json({ message: 'Favorites updated successfully', favorites: user.favorites });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Fetch user's favorite arts and events
+router.get('/favorites/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const favoriteArts = await Art.find({ _id: { $in: user.favorites } });
+
+    const favoriteEvents = await Event.find({ _id: { $in: user.favorites } });
+
+    res.json({ arts: favoriteArts, events: favoriteEvents });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;
