@@ -62,7 +62,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Implement token generation or session management here
-    res.status(200).json({ message: 'Login successful', userId: user._id });
+    res.status(200).json({ message: 'Login successful', userId: user._id, userType: user.type });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
