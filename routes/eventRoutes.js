@@ -75,6 +75,18 @@ router.post('/', upload.array('images', 3), async (req, res) => {
     }
   });
 
+  router.get('/:id', async (req, res) => {
+    try {
+      const event = await Event.findById(req.params.id);
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      res.json(event);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
   // send event details to screen
   router.patch('/:id', async (req, res) => {
     try {

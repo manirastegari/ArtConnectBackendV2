@@ -73,6 +73,18 @@ router.get('/', async (req, res) => {
     }
   });
 
+  router.get('/:id', async (req, res) => {
+    try {
+      const art = await Art.findById(req.params.id);
+      if (!art) {
+        return res.status(404).json({ error: 'Art not found' });
+      }
+      res.json(art);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // send art details to screen
   router.patch('/:id', async (req, res) => {
     try {
