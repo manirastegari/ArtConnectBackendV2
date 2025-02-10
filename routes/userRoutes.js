@@ -142,4 +142,28 @@ router.get('/favorites/:userId', async (req, res) => {
   }
 });
 
+// Add a new route to toggle follow
+router.post('/toggle-follow/:userId/:artistId', async (req, res) => {
+  try {
+    const { userId, artistId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isFollowing = user.followed.includes(artistId);
+    if (isFollowing) {
+      user.followed.pull(artistId);
+    } else {
+      user.followed.push(artistId);
+    }
+
+    await user.save();
+    res.status(200).json({ message: 'Follow status updated successfully', followed: user.followed });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
