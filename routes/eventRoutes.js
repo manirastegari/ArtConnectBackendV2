@@ -19,86 +19,88 @@ const upload = multer({
 
 // Add a new event
 router.post('/', upload.array('images', 3), async (req, res) => {
-    try {
-      const { title, category, price, description, date, time, artistID } = req.body;
-      const imageBase64Strings = await Promise.all(
-        req.files.map(async (file) => {
-          let buffer = await sharp(file.buffer)
-            .resize(1200, 800)
-            .toFormat('webp')
-            .toBuffer();
-  
-          // Reduce quality until the image is under 150 KB
-          let quality = 90;
-          while (buffer.length > 150 * 1024 && quality > 10) {
-            buffer = await sharp(file.buffer)
-              .resize(1200, 800)
-              .toFormat('webp', { quality })
-              .toBuffer();
-            quality -= 10;
-          }
-  
-          // Convert buffer to base64
-          return buffer.toString('base64');
-        })
-      );
-  
-      const newEvent = new Event({
-        title,
-        category,
-        images: imageBase64Strings, // Store the base64 strings
-        price,
-        description,
-        date,
-        time,
-        artistID,
-      });
-  
-      await newEvent.save();
-      res.status(201).json({ message: 'Event added successfully' });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-  
-  // Get all events with images in base64
-  router.get('/', async (req, res) => {
-    try {
-      const events = await Event.find();
-      const eventsWithBase64Images = events.map(event => ({
-        ...event.toObject(),
-        images: event.images.map(imageBuffer => imageBuffer.toString('base64'))
-      }));
-      res.json(eventsWithBase64Images);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  try {
+    const { title, category, price, description, date, time, artistID } = req.body;
+    const imageBase64Strings = await Promise.all(
+      req.files.map(async (file) => {
+        let buffer = await sharp(file.buffer)
+          .resize(1200, 800)
+          .toFormat('webp')
+          .toBuffer();
 
-  router.get('/:id', async (req, res) => {
-    try {
-      const event = await Event.findById(req.params.id);
-      if (!event) {
-        return res.status(404).json({ error: 'Event not found' });
-      }
-      res.json(event);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+        // Reduce quality until the image is under 150 KB
+        let quality = 90;
+        while (buffer.length > 150 * 1024 && quality > 10) {
+          buffer = await sharp(file.buffer)
+            .resize(1200, 800)
+            .toFormat('webp', { quality })
+            .toBuffer();
+          quality -= 10;
+        }
+
+        // Convert buffer to base64
+        return buffer.toString('base64');
+      })
+    );
+
+    const newEvent = new Event({
+      title,
+      category,
+      images: imageBase64Strings, // Store the base64 strings
+      price,
+      description,
+      date,
+      time,
+      artistID,
+    });
+
+    await newEvent.save();
+    res.status(201).json({ message: 'Event added successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Get all events with images in base64
+router.get('/', async (req, res) => {
+  try {
+    const events = await Event.find();
+    const eventsWithBase64Images = events.map(event => ({
+      ...event.toObject(),
+      images: event.images.map(imageBuffer => imageBuffer.toString('base64'))
+    }));
+    res.json(eventsWithBase64Images);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get event details by ID
+router.get('/:id', async (req, res) => {
+  try {
+    console.log(`Fetching event with ID: ${req.params.id}`);
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
     }
-  });
-  
-  // send event details to screen
-  router.patch('/:id', async (req, res) => {
-    try {
-      const { isAvailable } = req.body;
-      const event = await Event.findByIdAndUpdate(req.params.id, { isAvailable }, { new: true });
-      if (!event) {
-        return res.status(404).json({ error: 'Event not found' });
-      }
-      res.json(event);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.json(event);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update event availability
+router.patch('/:id', async (req, res) => {
+  try {
+    const { isAvailable } = req.body;
+    const event = await Event.findByIdAndUpdate(req.params.id, { isAvailable }, { new: true });
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
     }
-  });
+    res.json(event);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;
