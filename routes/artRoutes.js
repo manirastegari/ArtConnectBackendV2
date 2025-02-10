@@ -74,9 +74,10 @@ router.get('/', async (req, res) => {
   });
 
   // send art details to screen
-  router.get('/:id', async (req, res) => {
+  router.patch('/:id', async (req, res) => {
     try {
-      const art = await Art.findById(req.params.id);
+      const { isAvailable } = req.body;
+      const art = await Art.findByIdAndUpdate(req.params.id, { isAvailable }, { new: true });
       if (!art) {
         return res.status(404).json({ error: 'Art not found' });
       }

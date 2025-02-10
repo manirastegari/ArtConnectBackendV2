@@ -6,7 +6,8 @@ const artSchema = new mongoose.Schema({
   images: [{ type: String, required: true }],
   price: { type: Number, required: true },
   description: { type: String, required: true },
-  artistID: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  artistID: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  isAvailable: { type: Boolean, default: true }
 });
 
 module.exports = mongoose.model('Art', artSchema);
