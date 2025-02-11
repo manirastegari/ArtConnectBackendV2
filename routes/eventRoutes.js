@@ -64,7 +64,7 @@ router.post('/', upload.array('images', 3), async (req, res) => {
 // Get all events with images in base64
 router.get('/', async (req, res) => {
   try {
-    const events = await Event.find();
+    const events = await Event.find({ isAvailable: true });
     const eventsWithBase64Images = events.map(event => ({
       ...event.toObject(),
       images: event.images.map(imageBuffer => imageBuffer.toString('base64'))

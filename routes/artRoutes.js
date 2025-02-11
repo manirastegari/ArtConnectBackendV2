@@ -62,7 +62,7 @@ router.post('/', upload.array('images', 3), async (req, res) => {
 // Get all art pieces with images in base64
 router.get('/', async (req, res) => {
   try {
-    const arts = await Art.find();
+    const arts = await Art.find({ isAvailable: true });
     const artsWithBase64Images = arts.map(art => ({
       ...art.toObject(),
       images: art.images.map(imageBuffer => imageBuffer.toString('base64'))
