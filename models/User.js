@@ -7,7 +7,9 @@ const userSchema = new mongoose.Schema({
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Art' }],
   followed: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   type: { type: String, enum: ['Artist', 'Customer'], required: true },
-  image: { type: String, default: '' }
+  image: { type: String, default: '' },
+  purchasedArts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Art' }],
+  bookedEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
 });
 
 module.exports = mongoose.model('User', userSchema);
