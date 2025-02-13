@@ -90,7 +90,7 @@ router.get('/', async (req, res) => {
       filter.category = category;
     }
 
-    const events = await Event.find(filter);
+    const events = await Event.find(filter).sort({ _id: -1 }).limit(10); // Sort by most recent
     res.json(events);
   } catch (error) {
     res.status(500).json({ error: error.message });
