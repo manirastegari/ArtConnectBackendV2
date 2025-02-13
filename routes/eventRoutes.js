@@ -61,15 +61,37 @@ router.post('/', upload.array('images', 3), async (req, res) => {
   }
 });
 
-// Get all events with images in base64
+// // Get all events with images in base64
+// router.get('/', async (req, res) => {
+//   try {
+//     const events = await Event.find({ isAvailable: true });
+//     const eventsWithBase64Images = events.map(event => ({
+//       ...event.toObject(),
+//       images: event.images.map(imageBuffer => imageBuffer.toString('base64'))
+//     }));
+//     res.json(eventsWithBase64Images);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 router.get('/', async (req, res) => {
   try {
-    const events = await Event.find({ isAvailable: true });
-    const eventsWithBase64Images = events.map(event => ({
-      ...event.toObject(),
-      images: event.images.map(imageBuffer => imageBuffer.toString('base64'))
-    }));
-    res.json(eventsWithBase64Images);
+    const { query, category } = req.query;
+    const filter = { isAvailable: true };
+
+    if (query) {
+      filter.$or = [
+        { title: new RegExp(query, 'i') },
+        { description: new RegExp(query, 'i') }
+      ];
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    const events = await Event.find(filter);
+    res.json(events);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
