@@ -90,7 +90,7 @@ router.post('/logout', (req, res) => {
 // Get user details
 router.get('/details/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('fullname email type image favorites followed');
+    const user = await User.findById(req.params.id).select('fullname email type image favorites followed purchasedArts bookedEvents');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
