@@ -87,17 +87,27 @@ router.post('/logout', (req, res) => {
   res.status(200).json({ message: 'Logout successful' });
 });
 
-// Get user details
+// Get user details with posted arts and events
 router.get('/details/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
       .select('fullname email type image favorites followed purchasedArts bookedEvents')
       .populate('purchasedArts')
       .populate('bookedEvents');
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json(user);
+
+    // Fetch posted arts and events
+    const postedArts = await Art.find({ artistID: req.params.id });
+    const postedEvents = await Event.find({ artistID: req.params.id });
+
+    res.json({
+      ...user.toObject(),
+      postedArts,
+      postedEvents
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
