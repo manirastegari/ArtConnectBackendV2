@@ -104,7 +104,7 @@ router.get('/details/:id', async (req, res) => {
     const postedEvents = await Event.find({ artistID: req.params.id });
 
     res.json({
-      ...user.toObject(),
+      user: user.toObject(), // Wrap user data in a 'user' key
       postedArts,
       postedEvents
     });
