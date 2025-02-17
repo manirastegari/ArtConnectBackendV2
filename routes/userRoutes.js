@@ -92,6 +92,8 @@ router.get('/details/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
       .select('fullname email type image favorites followed purchasedArts bookedEvents')
+      .populate('favorites')
+      .populate('followed')
       .populate('purchasedArts')
       .populate('bookedEvents');
 
