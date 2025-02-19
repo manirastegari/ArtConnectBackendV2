@@ -69,7 +69,8 @@ router.get('/', async (req, res) => {
     if (query) {
       filter.$or = [
         { title: new RegExp(query, 'i') },
-        { description: new RegExp(query, 'i') }
+        { description: new RegExp(query, 'i') },
+        { category: new RegExp(query, 'i') } // Include category in the search
       ];
     }
 
