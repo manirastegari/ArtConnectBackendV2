@@ -139,6 +139,29 @@ router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
   }
 });
 
+router.post('/toggle-favorite/:userId/:eventId', async (req, res) => {
+  try {
+    const { userId, eventId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isFavorite = user.favorites.includes(eventId);
+    if (isFavorite) {
+      user.favorites.pull(eventId);
+    } else {
+      user.favorites.push(eventId);
+    }
+
+    await user.save();
+    res.status(200).json({ message: 'Favorites updated successfully', favorites: user.favorites });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Fetch user's favorite arts and events
 router.get('/favorites/:userId', async (req, res) => {
   try {
