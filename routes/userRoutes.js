@@ -115,7 +115,7 @@ router.get('/details/:id', async (req, res) => {
   }
 });
 
-// Toggle favorite art
+// Toggle favorite art a
 router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
   try {
     const { userId, artId } = req.params;
