@@ -87,22 +87,17 @@ router.post('/logout', (req, res) => {
   res.status(200).json({ message: 'Logout successful' });
 });
 
-
-
+// Get user details with posted arts and events
 router.get('/details/:id', async (req, res) => {
   try {
-    console.log(`Fetching details for user ID: ${req.params.id}`);
-    
     const user = await User.findById(req.params.id)
-      .select('fullname email type image favoriteArts favoriteEvents followed purchasedArts bookedEvents')
-      .populate('favoriteArts')
-      .populate('favoriteEvents')
+      .select('fullname email type image favorites followed purchasedArts bookedEvents')
+      .populate('favorites')
       .populate('followed')
       .populate('purchasedArts')
       .populate('bookedEvents');
 
     if (!user) {
-      console.error('User not found');
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -116,63 +111,25 @@ router.get('/details/:id', async (req, res) => {
       postedEvents
     });
   } catch (error) {
-    console.error('Error fetching user details:', error);
     res.status(500).json({ error: error.message });
   }
 });
-// Get user details with posted arts and events 1
-// router.get('/details/:id', async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id)
-//       .select('fullname email type image favorites followed purchasedArts bookedEvents')
-//       .populate('favorites')
-//       .populate('followed')
-//       .populate('purchasedArts')
-//       .populate('bookedEvents');
 
-//     if (!user) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     // Fetch posted arts and events
-//     const postedArts = await Art.find({ artistID: req.params.id });
-//     const postedEvents = await Event.find({ artistID: req.params.id });
-
-//     res.json({
-//       user: user.toObject(), // Wrap user data in a 'user' key
-//       postedArts,
-//       postedEvents
-//     });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-
-router.post('/toggle-favorite/:userId/:itemId/:itemType', async (req, res) => {
+// Toggle favorite art
+router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
   try {
-    const { userId, itemId, itemType } = req.params;
+    const { userId, artId } = req.params;
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    let isFavorite;
-    if (itemType.toLowerCase() === 'art') {
-      isFavorite = user.favorites.includes(itemId);
-      if (isFavorite) {
-        user.favorites.pull(itemId);
-      } else {
-        user.favorites.push(itemId);
-      }
-    } else if (itemType.toLowerCase() === 'event') {
-      isFavorite = user.favorites.includes(itemId);
-      if (isFavorite) {
-        user.favorites.pull(itemId);
-      } else {
-        user.favorites.push(itemId);
-      }
+    const isFavorite = user.favorites.includes(artId);
+    if (isFavorite) {
+      user.favorites.pull(artId);
+    } else {
+      user.favorites.push(artId);
     }
 
     await user.save();
@@ -181,31 +138,8 @@ router.post('/toggle-favorite/:userId/:itemId/:itemType', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// Toggle favorite art a
-// router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
-//   try {
-//     const { userId, artId } = req.params;
-//     const user = await User.findById(userId);
 
-//     if (!user) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     const isFavorite = user.favorites.includes(artId);
-//     if (isFavorite) {
-//       user.favorites.pull(artId);
-//     } else {
-//       user.favorites.push(artId);
-//     }
-
-//     await user.save();
-//     res.status(200).json({ message: 'Favorites updated successfully', favorites: user.favorites });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-
+// Fetch user's favorite arts and events
 router.get('/favorites/:userId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -214,6 +148,7 @@ router.get('/favorites/:userId', async (req, res) => {
     }
 
     const favoriteArts = await Art.find({ _id: { $in: user.favorites } });
+
     const favoriteEvents = await Event.find({ _id: { $in: user.favorites } });
 
     res.json({ arts: favoriteArts, events: favoriteEvents });
@@ -221,23 +156,6 @@ router.get('/favorites/:userId', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// Fetch user's favorite arts and events
-// router.get('/favorites/:userId', async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.userId);
-//     if (!user) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     const favoriteArts = await Art.find({ _id: { $in: user.favorites } });
-
-//     const favoriteEvents = await Event.find({ _id: { $in: user.favorites } });
-
-//     res.json({ arts: favoriteArts, events: favoriteEvents });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 // Add a new route to toggle follow
 router.post('/toggle-follow/:userId/:artistId', async (req, res) => {
