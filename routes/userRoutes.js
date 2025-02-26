@@ -89,14 +89,12 @@ router.post('/logout', (req, res) => {
 
 
 
+// routes/userRoutes.js
 router.get('/details/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
       .select('fullname email type image favorites followed purchasedArts bookedEvents')
-      .populate({
-        path: 'favorites',
-        populate: { path: 'artistID', model: 'User' } // Populate artistID for both Art and Event
-      })
+      .populate('favorites') // Populate all favorites regardless of type
       .populate('followed')
       .populate('purchasedArts')
       .populate('bookedEvents');
@@ -105,18 +103,13 @@ router.get('/details/:id', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Separate Art and Event IDs
-    const artFavorites = user.favorites.filter(fav => fav instanceof Art).map(art => art._id);
-    const eventFavorites = user.favorites.filter(fav => fav instanceof Event).map(event => event._id);
-
     // Fetch posted arts and events
     const postedArts = await Art.find({ artistID: req.params.id });
     const postedEvents = await Event.find({ artistID: req.params.id });
 
     res.json({
       user: user.toObject(), // Wrap user data in a 'user' key
-      artFavorites,
-      eventFavorites,
+      favorites: user.favorites.map(fav => fav._id), // Send all favorite IDs
       postedArts,
       postedEvents
     });
