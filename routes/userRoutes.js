@@ -87,12 +87,16 @@ router.post('/logout', (req, res) => {
   res.status(200).json({ message: 'Logout successful' });
 });
 
-// Get user details with posted arts and events
+
+
 router.get('/details/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
       .select('fullname email type image favorites followed purchasedArts bookedEvents')
-      .populate('favorites')
+      .populate({
+        path: 'favorites',
+        populate: { path: 'artistID', model: 'User' } // Populate artistID for both Art and Event
+      })
       .populate('followed')
       .populate('purchasedArts')
       .populate('bookedEvents');
@@ -101,12 +105,18 @@ router.get('/details/:id', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Separate Art and Event IDs
+    const artFavorites = user.favorites.filter(fav => fav instanceof Art).map(art => art._id);
+    const eventFavorites = user.favorites.filter(fav => fav instanceof Event).map(event => event._id);
+
     // Fetch posted arts and events
     const postedArts = await Art.find({ artistID: req.params.id });
     const postedEvents = await Event.find({ artistID: req.params.id });
 
     res.json({
       user: user.toObject(), // Wrap user data in a 'user' key
+      artFavorites,
+      eventFavorites,
       postedArts,
       postedEvents
     });
@@ -114,6 +124,33 @@ router.get('/details/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// // Get user details with posted arts and events
+// router.get('/details/:id', async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id)
+//       .select('fullname email type image favorites followed purchasedArts bookedEvents')
+//       .populate('favorites')
+//       .populate('followed')
+//       .populate('purchasedArts')
+//       .populate('bookedEvents');
+
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     // Fetch posted arts and events
+//     const postedArts = await Art.find({ artistID: req.params.id });
+//     const postedEvents = await Event.find({ artistID: req.params.id });
+
+//     res.json({
+//       user: user.toObject(), // Wrap user data in a 'user' key
+//       postedArts,
+//       postedEvents
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 // Toggle favorite art
 router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
