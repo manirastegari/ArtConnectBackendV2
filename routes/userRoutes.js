@@ -115,29 +115,62 @@ router.get('/details/:id', async (req, res) => {
   }
 });
 
-// Toggle favorite art
-router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
+// Toggle favorite art or event
+router.post('/toggle-favorite/:userId/:itemId/:itemType', async (req, res) => {
   try {
-    const { userId, artId } = req.params;
+    const { userId, itemId, itemType } = req.params;
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const isFavorite = user.favorites.includes(artId);
-    if (isFavorite) {
-      user.favorites.pull(artId);
-    } else {
-      user.favorites.push(artId);
+    if (itemType.toLowerCase() === 'art') {
+      const isFavorite = user.favoriteArts.includes(itemId);
+      if (isFavorite) {
+        user.favoriteArts.pull(itemId);
+      } else {
+        user.favoriteArts.push(itemId);
+      }
+    } else if (itemType.toLowerCase() === 'event') {
+      const isFavorite = user.favoriteEvents.includes(itemId);
+      if (isFavorite) {
+        user.favoriteEvents.pull(itemId);
+      } else {
+        user.favoriteEvents.push(itemId);
+      }
     }
 
     await user.save();
-    res.status(200).json({ message: 'Favorites updated successfully', favorites: user.favorites });
+    res.status(200).json({ message: 'Favorites updated successfully', favoriteArts: user.favoriteArts, favoriteEvents: user.favoriteEvents });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Toggle favorite art
+// router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
+//   try {
+//     const { userId, artId } = req.params;
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     const isFavorite = user.favorites.includes(artId);
+//     if (isFavorite) {
+//       user.favorites.pull(artId);
+//     } else {
+//       user.favorites.push(artId);
+//     }
+
+//     await user.save();
+//     res.status(200).json({ message: 'Favorites updated successfully', favorites: user.favorites });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 // Fetch user's favorite arts and events
 router.get('/favorites/:userId', async (req, res) => {
