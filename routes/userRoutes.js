@@ -116,7 +116,7 @@ router.get('/details/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// // Get user details with posted arts and events 11
+// // Get user details with posted arts and events 1155
 // router.get('/details/:id', async (req, res) => {
 //   try {
 //     const user = await User.findById(req.params.id)
