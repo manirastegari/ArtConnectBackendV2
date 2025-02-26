@@ -87,13 +87,12 @@ router.post('/logout', (req, res) => {
   res.status(200).json({ message: 'Logout successful' });
 });
 
-
+// Get user details with posted arts and events
 router.get('/details/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
-      .select('fullname email type image favoriteArts favoriteEvents followed purchasedArts bookedEvents')
-      .populate('favoriteArts')
-      .populate('favoriteEvents')
+      .select('fullname email type image favorites followed purchasedArts bookedEvents')
+      .populate('favorites')
       .populate('followed')
       .populate('purchasedArts')
       .populate('bookedEvents');
@@ -112,94 +111,33 @@ router.get('/details/:id', async (req, res) => {
       postedEvents
     });
   } catch (error) {
-    console.error('Error fetching user details:', error); // Log the error
     res.status(500).json({ error: error.message });
   }
 });
-// // Get user details with posted arts and events 1155
-// router.get('/details/:id', async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id)
-//       .select('fullname email type image favorites followed purchasedArts bookedEvents')
-//       .populate('favorites')
-//       .populate('followed')
-//       .populate('purchasedArts')
-//       .populate('bookedEvents');
 
-//     if (!user) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     // Fetch posted arts and events
-//     const postedArts = await Art.find({ artistID: req.params.id });
-//     const postedEvents = await Event.find({ artistID: req.params.id });
-
-//     res.json({
-//       user: user.toObject(), // Wrap user data in a 'user' key
-//       postedArts,
-//       postedEvents
-//     });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-// Toggle favorite art or event
-router.post('/toggle-favorite/:userId/:itemId/:itemType', async (req, res) => {
+// Toggle favorite art
+router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
   try {
-    const { userId, itemId, itemType } = req.params;
+    const { userId, artId } = req.params;
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (itemType.toLowerCase() === 'art') {
-      const isFavorite = user.favoriteArts.includes(itemId);
-      if (isFavorite) {
-        user.favoriteArts.pull(itemId);
-      } else {
-        user.favoriteArts.push(itemId);
-      }
-    } else if (itemType.toLowerCase() === 'event') {
-      const isFavorite = user.favoriteEvents.includes(itemId);
-      if (isFavorite) {
-        user.favoriteEvents.pull(itemId);
-      } else {
-        user.favoriteEvents.push(itemId);
-      }
+    const isFavorite = user.favorites.includes(artId);
+    if (isFavorite) {
+      user.favorites.pull(artId);
+    } else {
+      user.favorites.push(artId);
     }
 
     await user.save();
-    res.status(200).json({ message: 'Favorites updated successfully', favoriteArts: user.favoriteArts, favoriteEvents: user.favoriteEvents });
+    res.status(200).json({ message: 'Favorites updated successfully', favorites: user.favorites });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
-// Toggle favorite art a
-// router.post('/toggle-favorite/:userId/:artId', async (req, res) => {
-//   try {
-//     const { userId, artId } = req.params;
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     const isFavorite = user.favorites.includes(artId);
-//     if (isFavorite) {
-//       user.favorites.pull(artId);
-//     } else {
-//       user.favorites.push(artId);
-//     }
-
-//     await user.save();
-//     res.status(200).json({ message: 'Favorites updated successfully', favorites: user.favorites });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 // Fetch user's favorite arts and events
 router.get('/favorites/:userId', async (req, res) => {
