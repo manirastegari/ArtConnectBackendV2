@@ -17,10 +17,11 @@ const upload = multer({
   },
 });
 
+
 // Add a new event
 router.post('/', upload.array('images', 3), async (req, res) => {
   try {
-    const { title, category, price, description, date, time, artistID } = req.body;
+    const { title, category, price, description, date, time, artistID, venueCapacity } = req.body; // Include venueCapacity
     const imageBase64Strings = await Promise.all(
       req.files.map(async (file) => {
         let buffer = await sharp(file.buffer)
@@ -28,7 +29,6 @@ router.post('/', upload.array('images', 3), async (req, res) => {
           .toFormat('webp')
           .toBuffer();
 
-        // Reduce quality until the image is under 150 KB
         let quality = 90;
         while (buffer.length > 150 * 1024 && quality > 10) {
           buffer = await sharp(file.buffer)
@@ -38,7 +38,6 @@ router.post('/', upload.array('images', 3), async (req, res) => {
           quality -= 10;
         }
 
-        // Convert buffer to base64
         return buffer.toString('base64');
       })
     );
@@ -46,12 +45,13 @@ router.post('/', upload.array('images', 3), async (req, res) => {
     const newEvent = new Event({
       title,
       category,
-      images: imageBase64Strings, // Store the base64 strings
+      images: imageBase64Strings,
       price,
       description,
       date,
       time,
       artistID,
+      venueCapacity // Include venueCapacity
     });
 
     await newEvent.save();
@@ -60,6 +60,49 @@ router.post('/', upload.array('images', 3), async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+// Add a new event
+// router.post('/', upload.array('images', 3), async (req, res) => {
+//   try {
+//     const { title, category, price, description, date, time, artistID } = req.body;
+//     const imageBase64Strings = await Promise.all(
+//       req.files.map(async (file) => {
+//         let buffer = await sharp(file.buffer)
+//           .resize(1200, 800)
+//           .toFormat('webp')
+//           .toBuffer();
+
+//         // Reduce quality until the image is under 150 KB
+//         let quality = 90;
+//         while (buffer.length > 150 * 1024 && quality > 10) {
+//           buffer = await sharp(file.buffer)
+//             .resize(1200, 800)
+//             .toFormat('webp', { quality })
+//             .toBuffer();
+//           quality -= 10;
+//         }
+
+//         // Convert buffer to base64
+//         return buffer.toString('base64');
+//       })
+//     );
+
+//     const newEvent = new Event({
+//       title,
+//       category,
+//       images: imageBase64Strings, 
+//       price,
+//       description,
+//       date,
+//       time,
+//       artistID,
+//     });
+
+//     await newEvent.save();
+//     res.status(201).json({ message: 'Event added successfully' });
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// });
 
 router.get('/', async (req, res) => {
   try {
@@ -70,7 +113,7 @@ router.get('/', async (req, res) => {
       filter.$or = [
         { title: new RegExp(query, 'i') },
         { description: new RegExp(query, 'i') },
-        { category: new RegExp(query, 'i') } // Include category in the search
+        { category: new RegExp(query, 'i') } 
       ];
     }
 
@@ -78,7 +121,7 @@ router.get('/', async (req, res) => {
       filter.category = category;
     }
 
-    const events = await Event.find(filter).sort({ _id: -1 }).limit(10); // Sort by most recent
+    const events = await Event.find(filter).sort({ _id: -1 }).limit(10); 
     res.json(events);
   } catch (error) {
     res.status(500).json({ error: error.message });

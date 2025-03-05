@@ -108,8 +108,8 @@ router.get('/details/:id', async (req, res) => {
     const postedEvents = await Event.find({ artistID: req.params.id });
 
     res.json({
-      user: user.toObject(), // Wrap user data in a 'user' key
-      favorites: user.favorites.map(fav => fav._id), // Send all favorite IDs
+      user: user.toObject(), 
+      favorites: user.favorites.map(fav => fav._id), 
       postedArts,
       postedEvents
     });
@@ -117,33 +117,7 @@ router.get('/details/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// // Get user details with posted arts and events
-// router.get('/details/:id', async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id)
-//       .select('fullname email type image favorites followed purchasedArts bookedEvents')
-//       .populate('favorites')
-//       .populate('followed')
-//       .populate('purchasedArts')
-//       .populate('bookedEvents');
 
-//     if (!user) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     // Fetch posted arts and events
-//     const postedArts = await Art.find({ artistID: req.params.id });
-//     const postedEvents = await Event.find({ artistID: req.params.id });
-
-//     res.json({
-//       user: user.toObject(), // Wrap user data in a 'user' key
-//       postedArts,
-//       postedEvents
-//     });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 // Toggle favorite art
 router.post('/toggle-favorite/:userId/:artId', async (req, res) => {

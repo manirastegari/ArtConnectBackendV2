@@ -46,7 +46,7 @@ router.post('/', upload.array('images', 3), async (req, res) => {
     const newArt = new Art({
       title,
       category,
-      images: imageBase64Strings, // Store the base64 strings
+      images: imageBase64Strings,
       price,
       description,
       artistID,
@@ -68,7 +68,7 @@ router.get('/', async (req, res) => {
       filter.$or = [
         { title: new RegExp(query, 'i') },
         { description: new RegExp(query, 'i') },
-        { category: new RegExp(query, 'i') } // Include category in the search
+        { category: new RegExp(query, 'i') } 
       ];
     }
 
@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
       filter.category = category;
     }
 
-    const arts = await Art.find(filter).sort({ _id: -1 }).limit(10); // Sort by most recent
+    const arts = await Art.find(filter).sort({ _id: -1 }).limit(10);
     res.json(arts);
   } catch (error) {
     res.status(500).json({ error: error.message });
