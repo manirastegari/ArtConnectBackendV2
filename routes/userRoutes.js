@@ -216,6 +216,7 @@ router.post('/toggle-follow/:userId/:artistId', async (req, res) => {
 //   }
 // });
 // Inside the complete-order route
+// Inside the complete-order route
 router.post('/complete-order', async (req, res) => {
   const { userId, itemId, itemType, seats } = req.body;
 
@@ -240,6 +241,12 @@ router.post('/complete-order', async (req, res) => {
         return res.status(400).json({ error: 'Not enough seats available' });
       }
       event.venueCapacity -= seats; // Subtract booked seats from venue capacity
+
+      // Check if the event is fully booked
+      if (event.venueCapacity === 0) {
+        event.isAvailable = false; // Set isAvailable to false if no seats are left
+      }
+
       await event.save();
       user.bookedEvents.push(event._id);
     }
