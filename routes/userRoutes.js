@@ -186,8 +186,38 @@ router.post('/toggle-follow/:userId/:artistId', async (req, res) => {
 });
 
 // Azb
+// router.post('/complete-order', async (req, res) => {
+//   const { userId, itemId, itemType } = req.body;
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     if (itemType.toLowerCase() === 'art') {
+//       const art = await Art.findById(itemId);
+//       if (!art) {
+//         return res.status(404).json({ error: 'Art not found' });
+//       }
+//       user.purchasedArts.push(art._id);
+//     } else if (itemType.toLowerCase() === 'event') {
+//       const event = await Event.findById(itemId);
+//       if (!event) {
+//         return res.status(404).json({ error: 'Event not found' });
+//       }
+//       user.bookedEvents.push(event._id);
+//     }
+
+//     await user.save();
+//     res.status(200).json({ message: 'Order completed and user data updated successfully' });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+// Inside the complete-order route
 router.post('/complete-order', async (req, res) => {
-  const { userId, itemId, itemType } = req.body;
+  const { userId, itemId, itemType, seats } = req.body;
 
   try {
     const user = await User.findById(userId);
@@ -206,6 +236,11 @@ router.post('/complete-order', async (req, res) => {
       if (!event) {
         return res.status(404).json({ error: 'Event not found' });
       }
+      if (event.venueCapacity < seats) {
+        return res.status(400).json({ error: 'Not enough seats available' });
+      }
+      event.venueCapacity -= seats; // Subtract booked seats from venue capacity
+      await event.save();
       user.bookedEvents.push(event._id);
     }
 
