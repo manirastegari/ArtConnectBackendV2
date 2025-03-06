@@ -248,7 +248,9 @@ router.post('/complete-order', async (req, res) => {
       }
 
       await event.save();
-      user.bookedEvents.push(event._id);
+
+      // Add a new booking entry with the number of seats
+      user.bookedEvents.push({ eventId: event._id, seats });
     }
 
     await user.save();
@@ -257,6 +259,46 @@ router.post('/complete-order', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// router.post('/complete-order', async (req, res) => {
+//   const { userId, itemId, itemType, seats } = req.body;
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     if (itemType.toLowerCase() === 'art') {
+//       const art = await Art.findById(itemId);
+//       if (!art) {
+//         return res.status(404).json({ error: 'Art not found' });
+//       }
+//       user.purchasedArts.push(art._id);
+//     } else if (itemType.toLowerCase() === 'event') {
+//       const event = await Event.findById(itemId);
+//       if (!event) {
+//         return res.status(404).json({ error: 'Event not found' });
+//       }
+//       if (event.venueCapacity < seats) {
+//         return res.status(400).json({ error: 'Not enough seats available' });
+//       }
+//       event.venueCapacity -= seats; // Subtract booked seats from venue capacity
+
+//       // Check if the event is fully booked
+//       if (event.venueCapacity === 0) {
+//         event.isAvailable = false; // Set isAvailable to false if no seats are left
+//       }
+
+//       await event.save();
+//       user.bookedEvents.push(event._id);
+//     }
+
+//     await user.save();
+//     res.status(200).json({ message: 'Order completed and user data updated successfully' });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 
 module.exports = router;
