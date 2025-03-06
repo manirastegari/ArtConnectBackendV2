@@ -10,7 +10,7 @@ const eventSchema = new mongoose.Schema({
   time: { type: String, required: true },
   artistID: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   isAvailable: { type: Boolean, default: true },
-  venueCapacity: { type: Number, min: 5, max: 50, required: true }
+  venueCapacity: { type: Number, required: true }
 });
 
 module.exports = mongoose.model('Event', eventSchema);
