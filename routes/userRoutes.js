@@ -5,7 +5,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Art = require('../models/Art');
 const Event = require('../models/Event');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Set up multer for file uploads
 const upload = multer({
@@ -66,7 +66,7 @@ router.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-    
+
     // Implement token generation or session management here
     res.status(200).json({ message: 'Login successful', userId: user._id, userType: user.type });
   } catch (error) {

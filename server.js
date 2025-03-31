@@ -5,7 +5,7 @@ require('dotenv').config();
 const userRoutes = require('./routes/userRoutes');
 const artRoutes = require('./routes/artRoutes');
 const eventRoutes = require('./routes/eventRoutes');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Mongo DB username and password
 // saeidkhalili2024
