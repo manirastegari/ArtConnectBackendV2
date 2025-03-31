@@ -5,6 +5,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Art = require('../models/Art');
 const Event = require('../models/Event');
+const bcrypt = require('bcrypt');
 
 // Set up multer for file uploads
 const upload = multer({
@@ -61,6 +62,11 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
     // Implement token generation or session management here
     res.status(200).json({ message: 'Login successful', userId: user._id, userType: user.type });
   } catch (error) {
@@ -72,7 +78,8 @@ router.post('/login', async (req, res) => {
 router.post('/register', async (req, res) => {
   try {
     const { fullname, email, password, type } = req.body;
-    const newUser = new User({ fullname, email, password, type });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ fullname, email, password: hashedPassword, type });
     await newUser.save();
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -82,7 +89,6 @@ router.post('/register', async (req, res) => {
 
 // Logout user
 router.post('/logout', (req, res) => {
-  // Implement token/session invalidation logic here
   console.log('User logged out successfully');
   res.status(200).json({ message: 'Logout successful' });
 });
@@ -267,47 +273,6 @@ router.post('/complete-order', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// router.post('/complete-order', async (req, res) => {
-//   const { userId, itemId, itemType, seats } = req.body;
 
-//   try {
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     if (itemType.toLowerCase() === 'art') {
-//       const art = await Art.findById(itemId);
-//       if (!art) {
-//         return res.status(404).json({ error: 'Art not found' });
-//       }
-//       user.purchasedArts.push(art._id);
-//     } else if (itemType.toLowerCase() === 'event') {
-//       const event = await Event.findById(itemId);
-//       if (!event) {
-//         return res.status(404).json({ error: 'Event not found' });
-//       }
-//       if (event.venueCapacity < seats) {
-//         return res.status(400).json({ error: 'Not enough seats available' });
-//       }
-//       event.venueCapacity -= seats; // Subtract booked seats from venue capacity
-
-//       // Check if the event is fully booked
-//       if (event.venueCapacity === 0) {
-//         event.isAvailable = false; // Set isAvailable to false if no seats are left
-//       }
-
-//       await event.save();
-
-//       // Add a new booking entry with the number of seats
-//       user.bookedEvents.push({ eventId: event._id, seats });
-//     }
-
-//     await user.save();
-//     res.status(200).json({ message: 'Order completed and user data updated successfully' });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 module.exports = router;

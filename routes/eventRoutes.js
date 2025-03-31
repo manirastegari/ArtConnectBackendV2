@@ -60,49 +60,6 @@ router.post('/', upload.array('images', 3), async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-// Add a new event
-// router.post('/', upload.array('images', 3), async (req, res) => {
-//   try {
-//     const { title, category, price, description, date, time, artistID } = req.body;
-//     const imageBase64Strings = await Promise.all(
-//       req.files.map(async (file) => {
-//         let buffer = await sharp(file.buffer)
-//           .resize(1200, 800)
-//           .toFormat('webp')
-//           .toBuffer();
-
-//         // Reduce quality until the image is under 150 KB
-//         let quality = 90;
-//         while (buffer.length > 150 * 1024 && quality > 10) {
-//           buffer = await sharp(file.buffer)
-//             .resize(1200, 800)
-//             .toFormat('webp', { quality })
-//             .toBuffer();
-//           quality -= 10;
-//         }
-
-//         // Convert buffer to base64
-//         return buffer.toString('base64');
-//       })
-//     );
-
-//     const newEvent = new Event({
-//       title,
-//       category,
-//       images: imageBase64Strings, 
-//       price,
-//       description,
-//       date,
-//       time,
-//       artistID,
-//     });
-
-//     await newEvent.save();
-//     res.status(201).json({ message: 'Event added successfully' });
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
 
 router.get('/', async (req, res) => {
   try {
