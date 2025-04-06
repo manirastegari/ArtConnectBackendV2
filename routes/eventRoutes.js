@@ -79,6 +79,7 @@ router.get('/', async (req, res) => {
       filter.category = category;
     }
 
+    console.log("Filter usedEvent:", filter);
     const events = await Event.find(filter).sort({ _id: -1 }).limit(10); 
     res.json(events);
   } catch (error) {

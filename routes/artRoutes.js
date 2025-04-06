@@ -77,6 +77,8 @@ router.get('/', async (req, res) => {
       filter.category = category;
     }
 
+    console.log("Filter usedArt:", filter);
+
     const arts = await Art.find(filter).sort({ _id: -1 }).limit(10);
     res.json(arts);
   } catch (error) {
