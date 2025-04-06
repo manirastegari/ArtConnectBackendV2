@@ -75,19 +75,12 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    let arts;
+    // let arts;
     if (category && category !== "") {
       filter.category = category;
-      arts = await Art.find(filter).sort({ _id: -1 }).limit(10);
-    } else {
-      // When no category is selected, get 10 random arts
-      arts = await Art.aggregate([
-        { $match: filter },
-        { $sample: { size: 10 } }  // MongoDB's $sample for random selection
-      ]);
     }
 
-    console.log("Filter usedArt:", filter);
+    const arts = await Art.find(filter).sort({ _id: -1 }).limit(10);
     res.json(arts);
   } catch (error) {
     res.status(500).json({ error: error.message });

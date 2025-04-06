@@ -75,19 +75,12 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    let events;
+    // let events;
     if (category && category !== "") {
       filter.category = category;
-      events = await Event.find(filter).sort({ _id: -1 }).limit(10);
-    } else {
-      // When no category is selected, get 10 random events
-      events = await Event.aggregate([
-        { $match: filter },
-        { $sample: { size: 10 } }  // MongoDB's $sample for random selection
-      ]);
     }
-
-    console.log("Filter usedEvent:", filter);
+     
+    const events = await Event.find(filter).sort({ _id: -1 }).limit(10);
     res.json(events);
   } catch (error) {
     res.status(500).json({ error: error.message });
