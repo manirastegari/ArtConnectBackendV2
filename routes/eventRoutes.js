@@ -61,7 +61,6 @@ router.post('/', upload.array('images', 3), async (req, res) => {
   }
 });
 
-
 router.get('/', async (req, res) => {
   try {
     const { query, category } = req.query;
@@ -71,46 +70,20 @@ router.get('/', async (req, res) => {
       filter.$or = [
         { title: new RegExp(query, 'i') },
         { description: new RegExp(query, 'i') },
-        { category: new RegExp(query, 'i') }
+        { category: new RegExp(query, 'i') } 
       ];
     }
 
-    // let events;
-    if (category && category !== "") {
+    if (category) {
       filter.category = category;
     }
-     
-    const events = await Event.find(filter).sort({ _id: -1 }).limit(10);
+
+    const events = await Event.find(filter).sort({ _id: -1 }).limit(10); 
     res.json(events);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-// router.get('/', async (req, res) => {
-//   try {
-//     const { query, category } = req.query;
-//     const filter = { isAvailable: true };
-
-//     if (query) {
-//       filter.$or = [
-//         { title: new RegExp(query, 'i') },
-//         { description: new RegExp(query, 'i') },
-//         { category: new RegExp(query, 'i') } 
-//       ];
-//     }
-
-//     // if (category) {
-//     if (category && category !== "") {
-//       filter.category = category;
-//     }
-
-//     console.log("Filter usedEvent:", filter);
-//     const events = await Event.find(filter).sort({ _id: -1 }).limit(10); 
-//     res.json(events);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 // Get event details by ID
 router.get('/:id', async (req, res) => {
