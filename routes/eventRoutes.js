@@ -74,7 +74,8 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    if (category) {
+    // if (category) {
+    if (category && category !== "") {
       filter.category = category;
     }
 
