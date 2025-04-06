@@ -61,6 +61,9 @@ router.post('/', upload.array('images', 3), async (req, res) => {
   }
 });
 
+
+
+// routes/artRoutes.js and routes/eventRoutes.js
 router.get('/', async (req, res) => {
   try {
     const { query, category } = req.query;
@@ -74,16 +77,39 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    if (category) {
+    if (category && category !== 'All') {
       filter.category = category;
     }
 
-    const events = await Event.find(filter).sort({ _id: -1 }).limit(10); 
-    res.json(events);
+    const items = await Event.find(filter).sort({ _id: -1 }).limit(20); // Adjust limit as needed
+    res.json(items);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+// router.get('/', async (req, res) => {
+//   try {
+//     const { query, category } = req.query;
+//     const filter = { isAvailable: true };
+
+//     if (query) {
+//       filter.$or = [
+//         { title: new RegExp(query, 'i') },
+//         { description: new RegExp(query, 'i') },
+//         { category: new RegExp(query, 'i') } 
+//       ];
+//     }
+
+//     if (category) {
+//       filter.category = category;
+//     }
+
+//     const events = await Event.find(filter).sort({ _id: -1 }).limit(10); 
+//     res.json(events);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 // Get event details by ID
 router.get('/:id', async (req, res) => {
